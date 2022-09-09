@@ -145,3 +145,76 @@ while not user_play == 'E':
 print('You won', user_wins, 'out of', total_games, 'games')
 print('Computer won', computer_wins, 'out of', total_games, 'games')
 ```
+
+# Password Manager
+```python
+import os
+
+filename = 'passwords.txt'
+
+
+def encrypt(string):
+    encrypted = ''
+    for char in string:
+        encrypted += chr(ord(char) + 3)
+    return encrypted
+
+
+def decrypt(string):
+    decrypted = ''
+    for char in string:
+        decrypted += chr(ord(char) - 3)
+    return decrypted
+
+
+def add_password():
+    user_id = input('Enter user ID: ')
+    while ' ' in user_id:
+        print('There should be no spaces in the user ID.')
+        user_id = input('Enter user ID: ')
+    password = input('Enter the password: ')
+    while ' ' in password:
+        print('Passwords cannot have spaces.')
+        password = input('Enter the password: ')
+    encrypted_password = encrypt(password)
+    with open(filename, 'a') as f:
+        f.write(user_id + ' ' + encrypted_password + '\n')
+        f.close()
+
+
+def print_passwords():
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        for entries in lines:
+            print('User ID: ', entries.split()[0])
+            print('Password: ', decrypt(entries.split()[1]))
+            print()
+        f.close()
+    input('Press enter to continue...')
+
+
+def get_user_input():
+    os.system('CLS')
+    print('Choose an option below.')
+    print('1. Add new password.')
+    print('2. List all the passwords.')
+    print('3. Exit.')
+    choice = int(input('Enter an option: '))
+    print()
+    return choice
+
+
+choice = 0
+
+while choice != 3:
+    choice = get_user_input()
+    if choice == 1:
+        add_password()
+    elif choice == 2:
+        print_passwords()
+    elif choice == 3:
+        break
+    else:
+        print('Enter a valid option.')
+
+```
