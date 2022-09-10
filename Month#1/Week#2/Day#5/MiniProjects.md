@@ -146,6 +146,64 @@ print('You won', user_wins, 'out of', total_games, 'games')
 print('Computer won', computer_wins, 'out of', total_games, 'games')
 ```
 
+# Choose Your Own Adventure Game
+```python
+invalid_msg = 'Invalid option. You lost. ;('
+thanku_msg = 'Thank you for playing.'
+invalid = False
+
+
+def print_options(options):
+    for i, option in enumerate(options):
+        print(str(i+1) + '.', option)
+
+
+def get_input():
+    return int(input())
+
+
+def choices(options):
+    print_options(options)
+    return get_input()
+
+
+print('Welcome to Choose-Your-Own Adventure!!!')
+print('Do you wish to play?')
+print_options(['Yes', 'No'])
+answer = get_input()
+
+if answer == 2:
+    print("You don't get a choice. ;)")
+if answer == 1 or answer == 2:
+    print('You come across a bridge on top of a river.')
+    print_options(['Swim across the river.', 'Cross the bridge.'])
+    answer = get_input()
+    if answer == 1:
+        print('A crocodile had you as lunch.')
+        print('You died.')
+    elif answer == 2:
+        print('Bandits were hiding on the bridge. They try to loot all your belongings.')
+        answer = choices(['Fight them.', 'Give them everything.'])
+        if answer == 1:
+            print(
+                'One of them had a knife. He cut you up bad. You bleed out on the bridge.')
+            print('You died.')
+        elif answer == 2:
+            print('Bandits take all your food, water and belongings. You are 100s of miles away from any town.',
+                  'You wander the land but find no one. 3 days past and you find no water or food.',
+                  'You have no energy left so you give up and lay down under the tree waiting for the sweet sweet death.')
+            print('You died.')
+        else:
+            invalid = True
+    else:
+        invalid = True
+else:
+    invalid = True
+
+print(invalid_msg if invalid else thanku_msg)
+
+```
+
 # Password Manager
 ```python
 import os
