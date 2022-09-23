@@ -18,6 +18,7 @@ HTML files have unique combinations of tags and classes for each type of object 
 To retreive these tags and classes, we can inspect elements of a website. You can do this by right clicking on the any element on a brower, as shown.\
 ![Inspect prompt.](https://3fxtqy18kygf3on3bu39kh93-wpengine.netdna-ssl.com/wp-content/uploads/2020/04/How-to-inspect-element-on-Mac.png)
 
+
 This will take you to inspect window within the browser.\
 ![Inspect window in a browser.](https://images.ctfassets.net/lzny33ho1g45/6tl0bR7Iksg9zLxaLYQZKG/6cfa0dd7ac792105a2f219273e70268b/inspect-element-tutorial-00-hero.png)
 
@@ -195,19 +196,12 @@ class TestSpider(scrapy.Spider):
         # our dataframe
         items = PracticeItem()
 
-        # filter out the div tags with class "quote"
-        # this will give us all the quote block on the website
         quote_blocks = response.css('div.quote')
 
         for quote in quote_blocks:
 
-            # get the text out of span tags with class "text"
             text = quote.css('span.text::text').extract()
-
-            # get the text out of small tag within a span tag
             author = quote.css('span small::text').extract()
-
-            # get the text out of any tag with the class "tag"
             tags = quote.css('.tag::text').extract()
 
             # store the data in dataframe
@@ -274,3 +268,81 @@ class PracticePipeline:
 * `create_table` function will create the table for quotes, and recreate it if it already exists.
 * `insert_values` will store the values into the database.
 * `process_item` is for all the preprocessing needed for the data. In this case, the data is only being stored to the database.
+
+### Following Pages and Links
+
+On [this](https://quotes.toscrape.com) website, there are multiple pages with multiple quotes. Uptil now, we have only been able to scrape the quotes on the front page. But what if we wanted to scrape all the quotes on all the pages. For that, we'll make the following modifications to our spider:
+
+```python
+class TestSpider(scrapy.Spider):
+    name = 'test'
+    start_urls = [f"https://quotes.toscrape.com"]
+
+    def parse(self, response):
+
+        items = PracticeItem()
+        quote_blocks = response.css('div.quote')
+
+        for quote in quote_blocks:
+
+            text = quote.css('span.text::text').extract()
+            author = quote.css('span small::text').extract()
+            tags = quote.css('.tag::text').extract()
+
+            items['text'] = text
+            items['author'] = author
+            items['tags'] = tags
+
+            yield items
+
+        # after all the quotes of one page are scraped, find the next page in the tags of next button
+        next_page = response.css('li.next a').xpath('@href').extract_first()
+
+        # if the current page is the last page, it will not have a next button and next_page will be None
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
+```
+
+* `next_page` will hold the address of the next page, if there is one.
+* `follow` method will get the html file of the next file and store it in `response`.
+* *callback* argument tells the spider what to do with the next page. In this example it is just scraping all the pages.
+
+### Pagination
+
+Many websites use the concept of pagination, i.e the website is divided into pages. To traverse these pages, we can modify our spider like this:
+
+```python
+class TestSpider(scrapy.Spider):
+    name = 'test'
+    page_number = 1
+    start_urls = [f"https://quotes.toscrape.com/page/{page_number}/"]
+
+    def parse(self, response):
+
+        items = PracticeItem()
+        quote_blocks = response.css('div.quote')
+
+        for quote in quote_blocks:
+
+            text = quote.css('span.text::text').extract()
+            author = quote.css('span small::text').extract()
+            tags = quote.css('.tag::text').extract()
+
+            items['text'] = text
+            items['author'] = author
+            items['tags'] = tags
+
+            yield items
+
+        # the last page of the website is 10, so it page number should not be larger
+        if TestSpider.page_number < 10:
+
+            # increment the page number so spider can crawl to the next page
+            TestSpider.page_number += 1
+
+            # address of the next page is defined
+            next_page = f'https://quotes.toscrape.com/page/{TestSpider.page_number}/'
+
+            # spider crawls to the next page and starts scraping
+            yield response.follow(next_page, callback=self.parse)
+```
