@@ -4,6 +4,16 @@ import requests
 from datetime import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
+import sys
+
+
+if len(sys.argv) >= 4:
+    FROM = sys.argv[1]
+    PASS = sys.argv[2]
+    TO = sys.argv[3:]
+else:
+    print('Enter all the required arguments.')
+    exit()
 
 now = datetime.now()
 hacker_news_url = 'https://news.ycombinator.com'
@@ -48,9 +58,6 @@ def send_message(msg, to, from_, password):
 
 
 def main():
-    FROM = '##############@gmail.com'
-    TO = ['##########@gmail.com', '############@gmail.com']
-    PASS = '****************'
     content = ''
     content += get_content(hacker_news_url)
     content += '<br>----------------------<br><br><br>End of Message'
